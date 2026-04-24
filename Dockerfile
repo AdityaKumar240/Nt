@@ -2,9 +2,9 @@ FROM gcc:13
 
 WORKDIR /app
 
-COPY . /app
+COPY . .
 
-RUN g++ server.cpp -o server
+RUN g++ -std=c++17 server.cpp -o server
 
 EXPOSE 8080
 

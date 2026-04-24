@@ -7,6 +7,13 @@
 using namespace std;
 using namespace httplib;
 
+// ✅ Global CORS helper
+void setCORS(Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "*");
+}
+
 class HealthModule {
 protected:
     string filename;
@@ -85,49 +92,59 @@ int main() {
     Notes notes;
     Progress progress;
 
-    svr.Get("/", [](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_content("Server running", "text/plain");
+    // ✅ Global OPTIONS handler (CORS fix)
+    svr.Options(".*", [](const Request &, Response &res) {
+        setCORS(res);
     });
 
+    // Root
+    svr.Get("/", [](const Request&, Response& res) {
+        setCORS(res);
+        res.set_content("Server running 🚀", "text/plain");
+    });
+
+    // Profile
     svr.Post("/saveProfile", [&](const Request& req, Response& res) {
         profile.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Profile Saved", "text/plain");
     });
 
     svr.Get("/getProfile", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(profile.getAllData(), "text/plain");
     });
 
+    // Workout
     svr.Post("/addWorkout", [&](const Request& req, Response& res) {
         workout.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Workout Added", "text/plain");
     });
 
     svr.Get("/getWorkout", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(workout.getAllData(), "text/plain");
     });
 
+    // Food
     svr.Post("/addFood", [&](const Request& req, Response& res) {
         food.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Food Added", "text/plain");
     });
 
     svr.Get("/getFood", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(food.getAllData(), "text/plain");
     });
 
+    // Water
     svr.Post("/updateWater", [&](const Request& req, Response& res) {
         ofstream file("data/water.txt");
         file << req.body;
         file.close();
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Water Updated", "text/plain");
     });
 
@@ -135,26 +152,28 @@ int main() {
         ifstream file("data/water.txt");
         string data;
         getline(file, data);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(data, "text/plain");
     });
 
+    // Sleep
     svr.Post("/addSleep", [&](const Request& req, Response& res) {
         sleep.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Sleep Added", "text/plain");
     });
 
     svr.Get("/getSleep", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(sleep.getAllData(), "text/plain");
     });
 
+    // Steps
     svr.Post("/updateSteps", [&](const Request& req, Response& res) {
         ofstream file("data/steps.txt");
         file << req.body;
         file.close();
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Steps Updated", "text/plain");
     });
 
@@ -162,36 +181,36 @@ int main() {
         ifstream file("data/steps.txt");
         string data;
         getline(file, data);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(data, "text/plain");
     });
 
+    // Notes
     svr.Post("/addNote", [&](const Request& req, Response& res) {
         notes.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Note Added", "text/plain");
     });
 
     svr.Get("/getNotes", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(notes.getAllData(), "text/plain");
     });
 
+    // Progress
     svr.Post("/addProgress", [&](const Request& req, Response& res) {
         progress.appendData(req.body);
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content("Progress Added", "text/plain");
     });
 
     svr.Get("/getProgress", [&](const Request&, Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
+        setCORS(res);
         res.set_content(progress.getAllData(), "text/plain");
     });
 
-    int port = 3000;
-    if (getenv("PORT")) {
-        port = stoi(getenv("PORT"));
-    }
+    // Port (Railway)
+    int port = getenv("PORT") ? stoi(getenv("PORT")) : 8080;
 
     cout << "Server running on port " << port << endl;
     svr.listen("0.0.0.0", port);
